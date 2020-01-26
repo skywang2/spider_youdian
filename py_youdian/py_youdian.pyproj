@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>17174560-12e0-4c61-8acb-a1a86ad95398</ProjectGuid>
+    <ProjectGuid>46cc4af7-76d9-4670-986d-05cbedaaf312</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>py_youdian.py</StartupFile>
     <SearchPath>
