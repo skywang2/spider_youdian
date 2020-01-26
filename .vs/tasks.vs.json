@@ -1,0 +1,10 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "任务-cpp_edition",
+      "appliesTo": "cpp_edition/",
+      "type": "launch"
+    }
+  ]
+}
