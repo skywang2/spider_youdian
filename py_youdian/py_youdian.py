@@ -1,5 +1,6 @@
 import urllib.request
 import urllib.parse
+import urllib.error
 import json
 import http.cookiejar
 import time
@@ -73,30 +74,44 @@ class Youdian():
                                          method='POST',
                                          headers=self.header)
         # 使用opener请求管理器发送请求
-        response = self.opener.open(request)
-        self.html = response.read().decode()
-        # p = response.read()
-        # p = json.loads(p)
-        # print(p['msg'])
+        try:
+            response = self.opener.open(request)
+            self.html = response.read().decode()
+        except urllib.error.URLError as e:
+            print("login fail!!!")
+            print(e.reason)
+            self.html = ''
+
         return
 
     # 获取最后一页页号
     def get_last_page_num(self):
         # 访问第1页
         page_url = self.page_url + str(1)
-        response = self.opener.open(page_url)
-        self.html = response.read().decode()
-        # 解析尾页按钮链接上的页码即可
-        tool = Tool()
-        self.page_num = tool.get_last_page_num(self.html)
+        try:
+            response = self.opener.open(page_url)
+            self.html = response.read().decode()
+            # 解析尾页按钮链接上的页码即可
+            tool = Tool()
+            self.page_num = tool.get_last_page_num(self.html)
+        except urllib.error.URLError as e:
+            print('get last page num fail!!!')
+            print(e.reason)
+            self.html = ''
+            self.page_num = 1
 
         return
 
     # 请求第n页
     def get_n_page(self, n):
         page_url = self.page_url + str(n)
-        response = self.opener.open(page_url)
-        self.html = response.read().decode()
+        try:
+            response = self.opener.open(page_url)
+            self.html = response.read().decode()
+        except urllib.error.URLError as e:
+            print('get %d page fail!!!' %(n))
+            print(e.reason)
+            self.html = ''
 
         return
 
@@ -115,11 +130,12 @@ class Youdian():
             if len(pianzi.download_page_url) > 0:
                 # 请求getShareUrl页面
                 ret = self.get_name_xunlei(pianzi.download_page_url)
-                pianzi.name = ret['info'].split('|||')[0].split('.')[0]
-                pianzi.download_url1 = ret['durl'].split('|||')[0]
-                pianzi.download_url2 = ret['durl'].split('|||')[1]
-                pianzi.download_url3 = ret['durl'].split('|||')[2]
-                self.save_link(pianzi, self.file1)
+                if len(ret) > 0:
+                    pianzi.name = ret['info'].split('|||')[0].split('.')[0]
+                    pianzi.download_url1 = ret['durl'].split('|||')[0]
+                    pianzi.download_url2 = ret['durl'].split('|||')[1]
+                    pianzi.download_url3 = ret['durl'].split('|||')[2]
+                    self.save_link(pianzi, self.file1)
             self.pianzi.append(pianzi)
 
         return
@@ -127,9 +143,13 @@ class Youdian():
     # 请求片子页url,获取链接页面url特征码
     def get_link_url(self, url):
         tool = Tool()
-        response = self.opener.open(url)
-        ret = response.read().decode()
-        ret = tool.get_link_page_url(ret)
+        try:
+            response = self.opener.open(url)
+            ret = response.read().decode()
+            ret = tool.get_link_page_url(ret)
+        except urllib.error.URLError as e:
+            print('get condition code fail!!!')
+            print(e.reason)
 
         return ret
 
@@ -138,9 +158,14 @@ class Youdian():
         data = {'alias' : te}
         data = urllib.parse.urlencode(data).encode('utf-8')
         request = urllib.request.Request(self.share_url, data, method='POST')
-        response = self.opener.open(request)
-        ret = response.read().decode()
-        ret = json.loads(ret)
+        try:
+            response = self.opener.open(request)
+            ret = response.read().decode()
+            ret = json.loads(ret)
+        except urllib.error.URLError as e:
+            print('get shareUrl fail!!!')
+            print(e.reason)
+            ret = []
 
         return ret
 
@@ -243,7 +268,7 @@ if __name__ == "__main__":
     page = 'https://ydy1.com/page/'
     login = 'https://ydy1.com/user/login'
     share = 'https://ydy1.com//user/getShareUrl'
-    filename = 'xunlei1_test.txt'
+    filename = 'xunlei1_test_v0.9.txt'
 
     spider = Youdian(page, login, share, filename)
     # spider.get_login()
