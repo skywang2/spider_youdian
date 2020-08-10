@@ -6,27 +6,24 @@ import http.cookiejar
 import time
 import re
 
-# https://ydy1.com/user/login
-# https://ydy1.com/page/2
-
 
 class Pianzi():
-    name = ''           # 压缩包名字
-    pianzi_url = ''     # 下载页面的url
+    name = ''  # 压缩包名字
+    pianzi_url = ''  # 下载页面的url
     download_page_url = ''  # 链接页面url
-    download_url1 = ''   # 迅雷链接url
+    download_url1 = ''  # 迅雷链接url
     download_url2 = ''
     download_url3 = ''
-    icon_url = ''       # 缩略图url
+    icon_url = ''  # 缩略图url
 
     def __init__(self):
         return
 
 
 class Youdian():
-    page_url = ''           # 主页面url
+    page_url = ''  # 主页面url
     login_url = ''
-    share_url = ''      # ajax异步获取下载链接
+    share_url = ''  # ajax异步获取下载链接
     login_data = {}
     header = {}
     cookie = None
@@ -34,9 +31,9 @@ class Youdian():
     http_handler = None
     https_handler = None
     opener = None
-    page_num = 0            # 总页数
-    pianzi = []             # 保存片子类
-    html = ''               # 页面内容
+    page_num = 0  # 总页数
+    pianzi = []  # 保存片子类
+    html = ''  # 页面内容
     file1 = ''
 
     def __init__(self, page, login, share, filename):
@@ -109,7 +106,7 @@ class Youdian():
             response = self.opener.open(page_url)
             self.html = response.read().decode()
         except urllib.error.URLError as e:
-            print('get %d page fail!!!' %(n))
+            print('get %d page fail!!!' % (n))
             print(e.reason)
             self.html = ''
 
@@ -120,7 +117,7 @@ class Youdian():
         tool = Tool()
         ret = tool.get_pianzi_url_icon(self.html)
         for url, icon in ret:
-            print('process url:%s' %(url))
+            print('process url:%s' % (url))
             pianzi = Pianzi()
             pianzi.pianzi_url = url
             pianzi.icon_url = icon
@@ -133,8 +130,8 @@ class Youdian():
                 if len(ret) > 0:
                     pianzi.name = ret['info'].split('|||')[0].split('.')[0]
                     pianzi.download_url1 = ret['durl'].split('|||')[0]
-                    pianzi.download_url2 = ret['durl'].split('|||')[1]
-                    pianzi.download_url3 = ret['durl'].split('|||')[2]
+                    #pianzi.download_url2 = ret['durl'].split('|||')[1]
+                    #pianzi.download_url3 = ret['durl'].split('|||')[2]
                     self.save_link(pianzi, self.file1)
             self.pianzi.append(pianzi)
 
@@ -155,7 +152,7 @@ class Youdian():
 
     # 请求share页面,获取name和迅雷链接url
     def get_name_xunlei(self, te):
-        data = {'alias' : te}
+        data = {'alias': te}
         data = urllib.parse.urlencode(data).encode('utf-8')
         request = urllib.request.Request(self.share_url, data, method='POST')
         try:
@@ -172,8 +169,8 @@ class Youdian():
     # 保存下载链接(可以设计不同保存方式,以便使用)
     def save_link(self, pianzi, file):
         # 保存片子页url和icon
-        path = 'C:\\Users\\skywang\\Desktop\\登录\\download\\' + file
-        with open(path, 'a', encoding='utf-8') as f:
+        # path = 'C:\\Users\\skywang\\Desktop\\登录\\download\\' + file
+        with open(file, 'a', encoding='utf-8') as f:
             f.write(pianzi.download_url1 + '\n')
             f.flush()
 
@@ -188,7 +185,6 @@ class Youdian():
         return False
 
     def main(self):
-        tool = Tool()
         # 请求login
         self.get_login()
         # 获取最后一页页号
@@ -200,7 +196,7 @@ class Youdian():
             self.get_n_page(i + 1)
             # 判断第i+1页是否访问成功
             if self.is_login() is False:
-                print("page %d is False" %(i + 1))
+                print("page %d is False" % (i + 1))
                 self.get_login()
                 self.get_n_page(i + 1)
                 # 记录失败页号，页号为i，若第一次失败，页号为0，代表一开始的login失败
@@ -213,7 +209,7 @@ class Youdian():
             # 获取片子类所有属性
             self.get_pianzi_url_icon()
 
-            print("page %d is True, sleep 0.5s..." %(i + 1))
+            print("page %d is True, sleep 0.5s..." % (i + 1))
             time.sleep(0.5)
 
         return
@@ -247,7 +243,7 @@ class Tool():
     # 提取最后一页页号
     def get_last_page_num(self, txt):
         ret = re.findall(self.extract_last_page_num, txt)
-        if len(ret) > 0 :
+        if len(ret) > 0:
             return int(ret[0])
         return 1
 
@@ -265,12 +261,12 @@ class Tool():
 
 
 if __name__ == "__main__":
-    page = 'https://ydy1.com/page/'
-    login = 'https://ydy1.com/user/login'
-    share = 'https://ydy1.com//user/getShareUrl'
-    filename = 'xunlei1_test_v0.9.txt'
-
-    spider = Youdian(page, login, share, filename)
+    page = 'https://ydy1.com/page/'                 # page页
+    login = 'https://ydy1.com/user/login'           # 登录页，获取cookie
+    share = 'https://ydy1.com//user/getShareUrl'    # ajax获取下载地址
+    date = time.strftime("%Y%m%d", time.localtime(time.time()))                   # 获取日期
+    savePath = 'C:\\Users\\skywang\\Desktop\\登录\\' + 'youdian' + date + '.txt'   # 文件名
+    spider = Youdian(page, login, share, savePath)
     # spider.get_login()
     # spider.get_n_page(2)
     # path = 'C:\\Users\\skywang\\Desktop\\登录\\' + str(2) + '.html'
@@ -293,5 +289,3 @@ if __name__ == "__main__":
     #
     # tool = Tool()
     # ret = tool.get_link_page_url(html)
-
-
